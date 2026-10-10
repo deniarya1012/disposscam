@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() { return request.auth != null && request.auth.token.admin == true; }
+    function galleryIsVisible(weddingId) {
+      return get(/databases/$(database)/documents/weddings/$(weddingId)).data.galleryVisibility == true;
+    }
+
+    match /weddings/{weddingId} {
+      allow get: if true;
+      allow list, create, update, delete: if false;
+      match /photos/{photoId} {
+        allow get, list: if isAdmin() || (galleryIsVisible(weddingId)
+          && resource.data.uploadStatus == 'accepted'
+          && resource.data.moderationStatus == 'approved');
+        allow write: if false;
+      }
+    }
+    match /guests/{uid} { allow read, write: if false; }
+    match /uploadReservations/{reservationId} { allow read, write: if false; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

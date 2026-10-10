@@ -1,0 +1,8 @@
+{
+  "indexes": [
+    {"collectionGroup":"photos","queryScope":"COLLECTION","fields":[{"fieldPath":"uploadStatus","order":"ASCENDING"},{"fieldPath":"moderationStatus","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
+    {"collectionGroup":"photos","queryScope":"COLLECTION","fields":[{"fieldPath":"uploadStatus","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]},
+    {"collectionGroup":"guests","queryScope":"COLLECTION","fields":[{"fieldPath":"weddingId","order":"ASCENDING"},{"fieldPath":"createdAt","order":"DESCENDING"}]}
+  ],
+  "fieldOverrides": []
+}

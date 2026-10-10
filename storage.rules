@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function admin() { return request.auth != null && request.auth.token.admin == true; }
+    function reservation() {
+      return firestore.get(/databases/(default)/documents/uploadReservations/$(request.resource.metadata.reservationId)).data;
+    }
+    function photo() {
+      return firestore.get(/databases/(default)/documents/weddings/$(weddingId)/photos/$(resource.metadata.photoId)).data;
+    }
+    function wedding() {
+      return firestore.get(/databases/(default)/documents/weddings/$(weddingId)).data;
+    }
+    match /weddings/{weddingId}/{uid}/{fileName} {
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && reservation().uid == uid
+        && reservation().weddingId == weddingId
+        && reservation().status == 'pending'
+        && reservation().photoId == request.resource.metadata.photoId
+        && ((reservation().storagePath == 'weddings/' + weddingId + '/' + uid + '/' + fileName)
+          || (reservation().thumbnailPath == 'weddings/' + weddingId + '/' + uid + '/' + fileName))
+        && request.resource.contentType == 'image/jpeg'
+        && request.resource.size <= 8 * 1024 * 1024
+        && (!fileName.matches('.*-thumb[.]jpg') || request.resource.size <= 700 * 1024);
+      allow get: if admin() || (wedding().galleryVisibility == true
+        && photo().uploadStatus == 'accepted' && photo().moderationStatus == 'approved');
+      allow list, delete: if false;
+    }
+  }
+}
